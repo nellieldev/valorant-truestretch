@@ -71,7 +71,7 @@ int show_message_box_with_timeout(const int timeout, const std::string& message,
         return IDNO;
     }
 
-    typedef int (WINAPI* MessageBoxTimeout_t)(HWND, LPCSTR, LPCSTR, UINT, WORD, DWORD);
+    typedef int (WINAPI*MessageBoxTimeout_t)(HWND, LPCSTR, LPCSTR, UINT, WORD, DWORD);
     const auto MessageBoxTimeout = reinterpret_cast<MessageBoxTimeout_t>(GetProcAddress(user32, "MessageBoxTimeoutA"));
 
     if (!MessageBoxTimeout)
@@ -99,7 +99,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     try
     {
-        if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
+        {
             ReleaseMutex(mutex);
             CloseHandle(mutex);
             error("Another instance of this application is already running.");
@@ -167,7 +168,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             try
             {
                 screen_index = std::stoi(config["screen_index"]);
-            } catch (std::exception& _)
+            }
+            catch (std::exception& _)
             {
                 ReleaseMutex(mutex);
                 CloseHandle(mutex);
@@ -189,7 +191,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
                 aspect_ratio_x = std::stoi(aspect_ratio.substr(0, off));
                 aspect_ratio_y = std::stoi(aspect_ratio.substr(off + 1, aspect_ratio.length() - off - 1));
-            } catch (std::exception& _)
+            }
+            catch (std::exception& _)
             {
                 ReleaseMutex(mutex);
                 CloseHandle(mutex);
@@ -198,14 +201,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
         }
 
-        const auto window = FindWindowA("VALORANTUnrealWindow", nullptr);
-        if (!window)
+        auto window = FindWindowA("VALORANTUnrealWindow", nullptr);
+        if (window)
         {
             ReleaseMutex(mutex);
             CloseHandle(mutex);
-            error("Failed to find VALORANT window.");
+            error("Please close VALORANT.");
             return 1;
         }
+
+        do
+        {
+            window = FindWindowA("VALORANTUnrealWindow", nullptr);
+        }
+        while (!window);
 
         DWORD process_id;
         GetWindowThreadProcessId(window, &process_id);
@@ -321,7 +330,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             error("Failed to reset screen resolution.");
             return 1;
         }
-    } catch (std::exception& _) { }
+    }
+    catch (std::exception& _)
+    {
+    }
 
     ReleaseMutex(mutex);
     CloseHandle(mutex);
